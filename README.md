@@ -1,4 +1,4 @@
-聰明的鼠鹿
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
