@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聰明的鼠鹿：語文單人守護戰</title>
+    <style>
+        /* 平板專用優化樣式：大字體、大按鈕、防誤觸間距 */
+        body {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            background-color: #f4f9f4;
+            color: #2c3e50;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .container {
+            max-width: 750px;
+            width: 100%;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            text-align: center;
+            box-sizing: border-box;
+        }
+        h1 { color: #27ae60; margin-bottom: 5px; font-size: 1.8em; }
+        h2 { color: #34495e; font-size: 1.35em; margin-top: 5px; }
+        .subtitle { color: #7f8c8d; margin-bottom: 20px; font-size: 0.95em; }
+        
+        /* 關卡選單 */
+        .stage-nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 25px;
+            background: #e8f8f5;
+            padding: 8px;
+            border-radius: 12px;
+            gap: 8px;
+        }
+        .stage-btn {
+            flex: 1;
+            padding: 14px 5px;
+            border: none;
+            background: none;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #666;
+            transition: 0.2s;
+        }
+        .stage-btn.active {
+            background: #27ae60;
+            color: white;
+        }
+
+        /* 遊戲面板區域 */
+        .game-panel {
+            min-height: 420px;
+            padding: 20px;
+            border: 3px dashed #2ecc71;
+            border-radius: 15px;
+            background: #fbfdfb;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        /* 平板大按鈕 */
+        .btn-action {
+            padding: 18px 35px;
+            font-size: 1.25em;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 0 #2980b9;
+            transition: 0.1s;
+            margin: 15px 0;
+            width: 85%;
+        }
+        .btn-action:strong { background-color: #2980b9; }
+        
+        .display-box {
+            font-size: 1.3em;
+            margin: 15px;
+            font-weight: bold;
+            line-height: 1.6;
+            color: #2c3e50;
+            text-align: left;
+            width: 90%;
+        }
+        .highlight { color: #e74c3c; font-size: 1.15em; }
+        .hint { font-size: 0.9em; color: #95a5a6; margin-top: 12px; font-style: italic; }
+
+        /* 平板防誤觸大選項 */
+        .quiz-option {
+            display: block;
+            width: 90%;
+            padding: 18px 15px;
+            margin: 14px 0;
+            background: #fff;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.15em;
+            font-weight: bold;
+            text-align: left;
+            box-shadow: 0 4px 0 #3498db;
+            box-sizing: border-box;
+            line-height: 1.4;
+        }
+        .quiz-option:active {
+            background: #e8f4fd;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #3498db;
+        }
+        .feedback { font-size: 1.3em; font-weight: bold; margin-top: 15px; }
+        .feedback.correct { color: #2ecc71; }
+        .feedback.wrong { color: #e74c3c; }
+
+        /* 單人血量條控制 */
+        .status-hub {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+        .status-box {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        .status-player { background-color: #34495e; }
+        .status-boss { background-color: #e67e22; }
+        .hp-bar {
+            background: #e0e0e0;
+            border-radius: 5px;
+            height: 14px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .hp-fill {
+            background: #2ecc71;
+            height: 100%;
+            width: 100%;
+            transition: 0.3s;
+        }
+        .status-boss .hp-fill { background: #e74c3c; }
+
+        .progress-text {
+            font-size: 1em;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🦌 聰明的鼠鹿：語文單人挑戰</h1>
+    <div class="subtitle">範圍：第十一課《聰明的鼠鹿》專屬複習平板軟體</div>
+
+    <div class="stage-nav">
+        <button class="stage-btn active" onclick="changeStage(1)">第一關：詞組配對 (10題)</button>
+        <button class="stage-btn" onclick="changeStage(2)">第二關：能量守護戰 (10題)</button>
+        <button class="stage-btn" onclick="changeStage(3)">第三關：終極大深究 (10題)</button>
+    </div>
+
+    <div id="game-panel" class="game-panel">
+        </div>
+</div>
+
+<script>
+// ==================== 第十一課 100% 專屬資料庫 ====================
+
+// --- 第一關：10題不重複偏正詞組/修飾語配對 ---
+const stage1Quizzes = [
+    { mod: "飢餓的", ans: "老虎", opts: ["老虎", "石頭", "腳步"] },
+    { mod: "聰明鎮定的", ans: "鼠鹿", opts: ["道理", "鼠鹿", "風景"] },
+    { mod: "深海的", ans: "水藻", opts: ["運動", "山坡", "水藻"] },
+    { mod: "慢吞吞的", ans: "腳步", opts: ["腳步", "音樂", "狂奔"] },
+    { mod: "開開心心的", ans: "走過來", opts: ["哭起來", "黑著臉", "走過來"] },
+    { mod: "急急忙忙的", ans: "跑過去", opts: ["跑過去", "發著呆", "看著書"] },
+    { mod: "慌慌張張的", ans: "站起來", opts: ["站起來", "草叢中", "花盆裡"] },
+    { mod: "有氣無力的", ans: "走著", opts: ["走著", "睡覺", "風景"] },
+    { mod: "不懷好意的", ans: "思考著", opts: ["思考著", "行行好", "等一等"] },
+    { mod: "沉重的", ans: "步伐", opts: ["威風", "步伐", "美食"] }
+];
+
+// --- 第二關：10題不重複字形辨析與句型戰 ---
+const stage2Quizzes = [
+    { q: "舞台上的布【 】拉開了，戲就開始上演。請問括號中應填入哪個字？", options: ["A. 慕", "B. 幕", "C. 募"], answer: 1 },
+    { q: "許多【 】名而來的觀眾，都熱烈的為精采演出鼓掌。請問括號中應填入哪個字？", options: ["A. 慕", "B. 幕", "C. 墓"], answer: 0 },
+    { q: "他把沒有破【 】的故事書整理裝箱。請問括號中應填入哪個字？", options: ["A. 捐", "B. 員", "C. 損"], answer: 2 },
+    { q: "將裝箱好的故事書，【 】助給需要的團體。請問括號中應填入哪個字？", options: ["A. 捐", "B. 損", "C. 員"], answer: 0 },
+    { q: "請問下列哪一個詞語的字形完全正確？", options: ["A. 羨幕他人", "B. 開幕儀式", "C. 跌打捐傷"], answer: 1 },
+    { q: "「您這麼強大，【 】世界上最強壯的動物，【 】可以成為您的晚餐。」應填入？", options: ["A. 只有......才......", "B. 因為......所以......", "C. 雖然......但是......"], answer: 0 },
+    { q: "「臺灣有許多自然美景，【 】親自走訪，【 】能夠感受它們的美麗。」應填入？", options: ["A. 如果......就......", "B. 雖然......但是......", "C. 只有......才......"], answer: 2 },
+    { q: "「【 】提前登記的人，【 】可以優先進入園區參觀。」應填入？", options: ["A. 只有......才......", "B. 是......還是......", "C. 因為......所以......"], answer: 0 },
+    { q: "課文中提到老虎肚子餓，想找食物【 】飽肚子。請問括號中應填入哪個字？", options: ["A. 餐", "B. 填", "C. 夠"], answer: 1 },
+    { q: "吃下我有損您的【 】風啊！請問括號中應填入哪個字？", options: ["A. 威", "B. 夠", "C. 填"], answer: 0 }
+];
+
+// --- 第三關：10題不重複課文深究與語氣推理題 ---
+const stage3Quizzes = [
+    { q: "《聰明的鼠鹿》文體是什麼？主要透過什麼來推論角色在故事中的狀況？", options: ["A. 詩歌，透過押韻規律", "B. 劇本，透過角色的對話情境或神態", "C. 記敘文，透過大自然場景描寫"], answer: 1, hint: "提示：課文有第一幕、第二幕的劃分喔！" },
+    { q: "作者運用「幾次法則」來鋪陳故事，讓前兩次遇到的人都不符設定，製造緊張感？", options: ["A. 二次法則", "B. 三次法則", "C. 四次法則"], answer: 1, hint: "提示：依序遇到了小孩、老人，最後才是獵人。" },
+    { q: "第一幕中，鼠鹿說「我............我的身體太小了」，這裡的「............」刪節號代表什麼語氣？", options: ["A. 說話語氣斷斷續續，表現出害怕或緊張", "B. 說話很大聲、很有自信", "C. 代表話還沒說完就被打斷"], answer: 0, hint: "提示：想一想瘦小的鼠鹿剛被飢餓的老虎抓住時的心情。" },
+    { q: "老虎對著鼠鹿說：「眼前只有你，我不吃你吃誰？」這句話是什麼語氣？", options: ["A. 不耐煩且感到困惑的語氣", "B. 興奮想要分享的語氣", "C. 肯定就是要吃掉鼠鹿的語氣"], answer: 2, hint: "提示：老虎肚子非常餓，而且現場沒有別的動物。" },
+    { q: "小男主角開開心心走過來時，老虎「眼睛一亮」說：「那是人吧？我去吃他。」這代表老虎當下的心理狀態？", options: ["A. 感到欣喜與興奮", "B. 感到懷疑與不耐煩", "C. 感到著急與害怕"], answer: 0, hint: "提示：眼睛一亮代表發現了亮點或期待的獵物。" },
+    { q: "老人走過來時，拖著沉重的腳步說：「怎麼走了那麼久，還沒走到呢？」這表現出什麼情緒？", options: ["A. 開心唱歌的歡樂情緒", "B. 走得很累、有些不耐煩的情緒", "C. 鎮定想計謀的沉著情緒"], answer: 1, hint: "提示：腳步很沉重，又抱怨走得太久。" },
+    { q: "鼠鹿阻止老虎吃小孩和老人的「真正原因」是什麼？", options: ["A. 因為小孩和老人走得太快了，老虎追不上", "B. 因為他們不足以和老虎抗衡，若他們被吃，鼠鹿接下來還是有生命危險", "C. 因為鼠鹿想自己把他們吃掉"], answer: 1, hint: "提示：這表現出鼠鹿的整體保命策略，必須等能克制老虎的人出現。" },
+    { q: "當老虎打算撲向鼠鹿開胃時，剛好誰出現了，讓鼠鹿高興的說「您的食物上門了」？", options: ["A. 樵夫", "B. 船夫", "C. 獵人"], answer: 2, hint: "提示：最後是誰開槍把老虎嚇跑的呢？" },
+    { q: "只聽見「砰」的一聲，老虎接下來產生了什麼反應？", options: ["A. 被槍聲嚇得慌忙逃跑", "B. 把獵人撲倒在地上", "C. 慢吞吞的走到河邊喝水"], answer: 0, hint: "提示：成語「逃之夭夭」可以形容這個畫面。" },
+    { q: "《聰明的鼠鹿》這篇課文改編自哪一個國家的民間故事？想告訴我們什麼道理？", options: ["A. 韓國故事，告訴我們多跌幾次跤可以活得更久", "B. 印尼故事，告訴我們遇到突發事件要冷靜處理，化解危機", "C. 俄羅斯故事，告訴我們人不能太貪心"], answer: 1, hint: "提示：作者莫愛芳女士來自這個熱帶國家喔！" }
+];
+
+// ==================== 頁面控制與進度變數 ====================
+let idxS1 = 0;
+let idxS2 = 0;
+let idxS3 = 0;
+
+function changeStage(stageNum) {
+    currentStage = stageNum;
+    document.querySelectorAll('.stage-btn').forEach((btn, index) => {
+        if(index + 1 === stageNum) btn.classList.add('active');
+        else btn.classList.remove('active');
+    });
+    // 切換關卡時重置該關進度，確保每次進來都是完整 10 題
+    if(stageNum === 1) idxS1 = 0;
+    if(stageNum === 2) { idxS2 = 0; playerHP = 100; bossHP = 100; }
+    if(stageNum === 3) idxS3 = 0;
+    
+    renderStage();
+}
+
+function renderStage() {
+    const panel = document.getElementById('game-panel');
+    panel.innerHTML = ""; 
+
+    if (currentStage === 1) {
+        renderStage1();
+    } else if (currentStage === 2) {
+        renderStage2();
+    } else if (currentStage === 3) {
+        renderStage3();
+    }
+}
+
+// ==================== 第一關：詞組配對邏輯 ====================
+function renderStage1() {
+    const panel = document.getElementById('game-panel');
+    if (idxS1 >= stage1Quizzes.length) {
+        panel.innerHTML = `
+            <h2>🎉 太棒了！第一關全數通關！</h2>
+            <div class="display-box" style="color:#27ae60; text-align:center;">你已經成功配對了 10 組第十一課的修飾詞組！</div>
+            <button class="btn-action" onclick="changeStage(2)">繼續挑戰第二關 ➔</button>
+        `;
+        return;
+    }
+
+    const q = stage1Quizzes[idxS1];
+    panel.innerHTML = `
+        <div class="progress-text">進度：第 ${idxS1 + 1} 題 / 共 10 題</div>
+        <div class="display-box" style="text-align:center;">
+            請選出能與形容詞 <span class="highlight">「${q.mod}」</span> 組合的正確詞語：
+        </div>
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            ${q.opts.map(opt => `<button class="quiz-option" style="text-align:center;" onclick="checkStage1('${opt}')">${opt}</button>`).join('')}
+        </div>
+        <div id="fb1" class="feedback"></div>
+    `;
+}
+
+function checkStage1(selected) {
+    const q = stage1Quizzes[idxS1];
+    const fb = document.getElementById('fb1');
+    if (selected === q.ans) {
+        fb.className = "feedback correct";
+        fb.innerHTML = "🎯 答對了！非常棒！";
+        idxS1++;
+        setTimeout(renderStage1, 1000);
+    } else {
+        fb.className = "feedback wrong";
+        fb.innerHTML = "❌ 答錯囉，再想一想故事裡的配對！";
+    }
+}
+
+// ==================== 第二關：守護戰邏輯 ====================
+let playerHP = 100;
+let bossHP = 100;
+
+function renderStage2() {
+    const panel = document.getElementById('game-panel');
+
+    if (bossHP <= 0) {
+        panel.innerHTML = `
+            <h2>🏆 挑戰成功！老虎被你嚇跑了！</h2>
+            <div class="display-box" style="color:#27ae60; text-align:center;">你完成了 10 題高難度的字形與句型挑戰，順利守護了鼠鹿！</div>
+            <button class="btn-action" onclick="changeStage(3)">前進第三關終極挑戰 ➔</button>
+        `;
+        return;
+    }
+    if (playerHP <= 0 || idxS2 >= stage2Quizzes.length) {
+        panel.innerHTML = `
+            <h2>❌ 能量耗盡，守護失敗！</h2>
+            <div class="display-box" style="color:#e74c3c; text-align:center;">沒關係，翻開第十一課課本再挑戰一次吧！</div>
+            <button class="btn-action" style="background-color:#e74c3c; box-shadow:0 5px 0 #c0392b;" onclick="changeStage(2)">🔄 重新挑戰第二關</button>
+        `;
+        return;
+    }
+
+    const q = stage2Quizzes[idxS2];
+    panel.innerHTML = `
+        <div class="progress-text">能量戰：第 ${idxS2 + 1} 題 / 共 10 題</div>
+        
+        <div class="status-hub">
+            <div class="status-box status-player">
+                <div>🦌 我的守護能量</div>
+                <div class="hp-bar"><div class="hp-fill" style="width:${playerHP}%;"></div></div>
+                <div style="margin-top:5px; text-align:center;">HP: ${playerHP}</div>
+            </div>
+            <div class="status-box status-boss">
+                <div>🐯 飢餓的老虎血量</div>
+                <div class="hp-bar"><div class="hp-fill" style="width:${bossHP}%;"></div></div>
+                <div style="margin-top:5px; text-align:center;">HP: ${bossHP}</div>
+            </div>
+        </div>
+
+        <div class="display-box">
+            <span style="color:#2980b9;">【句型與生字挑戰】</span><br>${q.q}
+        </div>
+        
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            ${q.options.map((opt, idx) => `
+                <button class="quiz-option" onclick="checkStage2(${idx})">${opt}</button>
+            `).join('')}
+        </div>
+        <div id="fb2" class="feedback"></div>
+    `;
+}
+
+function checkStage2(idx) {
+    const q = stage2Quizzes[idxS2];
+    const fb = document.getElementById('fb2');
+    if (idx === q.answer) {
+        fb.className = "feedback correct";
+        fb.innerHTML = "🎯 答對了！成功痛擊老虎（敵方 HP -10）！";
+        bossHP -= 10;
+    } else {
+        fb.className = "feedback wrong";
+        fb.innerHTML = "❌ 答錯了！受到反彈傷害（自方 HP -20）！";
+        playerHP -= 20;
+    }
+    idxS2++;
+    setTimeout(renderStage2, 1500);
+}
+
+// ==================== 第三關：終極大深究邏輯 ====================
+function renderStage3() {
+    const panel = document.getElementById('game-panel');
+    if (idxS3 >= stage3Quizzes.length) {
+        panel.innerHTML = `
+            <h2>👑 恭喜你！榮獲「第十一課語文小達人」！</h2>
+            <div class="display-box" style="color:#27ae60; text-align:center; font-size:1.4em;">
+                🎉 挑戰成功！你完全獨立答對了 3 關共 30 題不重複的語文題目！
+            </div>
+            <p>你對《聰明的鼠鹿》故事結構、語氣轉變和哲理已經百分之百理解囉！</p>
+            <button class="btn-action" style="background-color:#27ae60; box-shadow:0 5px 0 #1e8449;" onclick="changeStage(1)">🔄 重玩整款遊戲</button>
+        `;
+        return;
+    }
+
+    const q = stage3Quizzes[idxS3];
+    panel.innerHTML = `
+        <div class="progress-text">終極深究：第 ${idxS3 + 1} 題 / 共 10 題</div>
+        <div class="display-box">
+            <span style="color:#9b59b6;">問題：</span>${q.q}
+        </div>
+        
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+            ${q.options.map((opt, idx) => `
+                <button class="quiz-option" onclick="checkStage3(${idx})">${opt}</button>
+            `).join('')}
+        </div>
+        <div id="fb3" class="feedback"></div>
+        <div class="hint">${q.hint}</div>
+    `;
+}
+
+function checkStage3(idx) {
+    const q = stage3Quizzes[idxS3];
+    const fb = document.getElementById('fb3');
+    if (idx === q.answer) {
+        fb.className = "feedback correct";
+        fb.innerHTML = "🎯 完美推理！答對了！";
+        idxS3++;
+        setTimeout(renderStage3, 1500);
+    } else {
+        fb.className = "feedback wrong";
+        fb.innerHTML = "❌ 糟糕，這個推理跟劇本情節不太符合，再想一想！";
+    }
+}
+
+// 初始啟動
+renderStage();
+</script>
+
+</body>
+</html>
